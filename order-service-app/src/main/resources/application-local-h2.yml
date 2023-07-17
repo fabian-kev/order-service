@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:/h2-databases/order_service_db
+    driver-class-name: org.h2.Driver
+    username: h2
+    password: h2
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    com.fabiankevin: DEBUG
+    org.zalando.logbook: TRACE
+#    org.hibernate.stat: DEBUG

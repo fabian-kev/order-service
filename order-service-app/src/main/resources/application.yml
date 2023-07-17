@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    code: OS
+    name: Order Service
+  profiles:
+    active: local
+
+
+application:
+  common:
+    error-responses:
+      SOME_EXCEPTION:
+        status: 400
+        code: TAG001
+        message: Tag already exists
+
+logging:
+  level:
+    org.hibernate.type: TRACE
