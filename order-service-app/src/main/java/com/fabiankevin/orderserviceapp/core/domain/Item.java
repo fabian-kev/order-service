@@ -86,12 +86,12 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return Objects.equals(id, item.id) && Objects.equals(quantity, item.quantity) && Objects.equals(code, item.code) && Objects.equals(name, item.name) && Objects.equals(description, item.description) && Objects.equals(unitPrice, item.unitPrice);
+        return productId.equals(item.productId) && code.equals(item.code);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, quantity, code, name, description, unitPrice);
+        return Objects.hash(productId, code);
     }
 
     public static class Builder {

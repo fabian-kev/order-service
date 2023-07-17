@@ -1,7 +1,10 @@
 package com.fabiankevin.orderserviceapp.application.web.mapper;
 
 import com.fabiankevin.domainstarter.domain.Amount;
+import com.fabiankevin.orderserviceapp.application.web.dto.AmountDto;
+import com.fabiankevin.orderserviceapp.application.web.dto.ItemDto;
 import com.fabiankevin.orderserviceapp.application.web.dto.request.PlaceOrderRequest;
+import com.fabiankevin.orderserviceapp.application.web.dto.response.OrderResponse;
 import com.fabiankevin.orderserviceapp.core.domain.Item;
 import com.fabiankevin.orderserviceapp.core.domain.Order;
 import com.fabiankevin.orderserviceapp.core.domain.value.Currency;
@@ -36,7 +39,6 @@ public class DefaultOrderMapper implements OrderMapper {
         );
     }
 
-
     public OrderEntity toEntity(Order order) {
         OrderEntity orderEntity = OrderEntity.builder()
                 .id(order.getId())
@@ -50,20 +52,6 @@ public class DefaultOrderMapper implements OrderMapper {
                 .build();
         orderEntity.setItems(order.getItems().stream().map(item -> toItemEntity(item, orderEntity)).collect(Collectors.toSet()));
         return orderEntity;
-    }
-
-    @Override
-    public Order toOrder(OrderEntity orderEntity) {
-        return Order.builder()
-                .id(orderEntity.getId())
-                .customerId(UUID.fromString(orderEntity.getCustomerId()))
-                .note(new Note(orderEntity.getNote()))
-                .status(orderEntity.getStatus())
-                .currency(new Currency(orderEntity.getCurrency()))
-                .updatedDate(orderEntity.getUpdatedDate())
-                .createdDate(orderEntity.getCreatedDate())
-                .items(orderEntity.getItems().stream().map(DefaultOrderMapper::toItem).toList())
-                .build();
     }
 
     private static ItemEntity toItemEntity(Item item, OrderEntity orderEntity) {
@@ -82,6 +70,26 @@ public class DefaultOrderMapper implements OrderMapper {
                 .build();
     }
 
+    @Override
+    public Order toOrder(OrderEntity orderEntity) {
+        Order order = Order.builder()
+                .id(orderEntity.getId())
+                .customerId(UUID.fromString(orderEntity.getCustomerId()))
+                .note(new Note(orderEntity.getNote()))
+                .status(orderEntity.getStatus())
+                .currency(new Currency(orderEntity.getCurrency()))
+                .updatedDate(orderEntity.getUpdatedDate())
+                .createdDate(orderEntity.getCreatedDate())
+                .build();
+
+        orderEntity.getItems()
+                .forEach(itemEntity -> {
+                    order.addItem(toItem(itemEntity));
+                });
+
+        return order;
+    }
+
     private static Item toItem(ItemEntity itemEntity){
         return Item.builder()
                 .id(itemEntity.getId())
@@ -95,4 +103,32 @@ public class DefaultOrderMapper implements OrderMapper {
                 .productId(UUID.fromString(itemEntity.getProductId()))
                 .build();
     }
+
+    @Override
+    public OrderResponse toOrderResponse(Order order) {
+
+        return OrderResponse.builder()
+                .id(order.getId())
+                .items(order.getItems().stream().map(DefaultOrderMapper::toItemDto).collect(Collectors.toList()))
+                .currency(order.getCurrency())
+                .status(order.getStatus())
+                .customerId(order.getCustomerId())
+                .note(order.getNote())
+                .updatedDate(order.getUpdatedDate())
+                .createdDate(order.getCreatedDate())
+                .build();
+    }
+
+    private static ItemDto toItemDto(Item item){
+        return ItemDto.builder()
+                .id(item.getId())
+                .code(item.getCode())
+                .description(item.getDescription())
+                .name(item.getName())
+                .productId(item.getProductId())
+                .quantity(item.getQuantity().getValue())
+                .unitPrice(AmountDto.of(item.getUnitPrice()))
+                .build();
+    }
+
 }

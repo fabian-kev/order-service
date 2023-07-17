@@ -12,10 +12,11 @@ spring:
 application:
   common:
     error-responses:
-      SOME_EXCEPTION:
+      ITEM_ALREADY_EXISTS:
         status: 400
-        code: TAG001
-        message: Tag already exists
+        code: OS001
+        message: '{0} is a duplicate item'
+
 
 logging:
   level:

@@ -4,11 +4,13 @@ import com.fabiankevin.orderserviceapp.application.web.dto.AmountDto;
 import com.fabiankevin.orderserviceapp.application.web.dto.request.ItemRequest;
 import com.fabiankevin.orderserviceapp.application.web.dto.request.PlaceOrderRequest;
 import com.fabiankevin.orderserviceapp.application.web.mapper.OrderMapper;
+import com.fabiankevin.orderserviceapp.core.usecases.GetOrder;
 import com.fabiankevin.orderserviceapp.core.usecases.PlaceOrder;
 import com.fabiankevin.restapistarter.WebAutoConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,6 +46,9 @@ public class OrderControllerTes {
 
     @MockBean
     private PlaceOrder placeOrder;
+
+    @MockBean
+    private GetOrder getOrder;
 
     private UUID orderId = UUID.randomUUID();
 

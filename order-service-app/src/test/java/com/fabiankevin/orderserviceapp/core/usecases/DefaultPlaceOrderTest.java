@@ -8,6 +8,7 @@ import com.fabiankevin.orderserviceapp.core.domain.OrderStatus;
 import com.fabiankevin.orderserviceapp.core.domain.value.Currency;
 import com.fabiankevin.orderserviceapp.core.domain.value.Note;
 import com.fabiankevin.orderserviceapp.core.domain.value.Quantity;
+import com.fabiankevin.orderserviceapp.core.exceptions.ItemAlreadyExistsException;
 import com.fabiankevin.orderserviceapp.core.port.db.OrderRepository;
 import com.fabiankevin.orderserviceapp.core.usecases.inbound.ItemCommand;
 import com.fabiankevin.orderserviceapp.core.usecases.inbound.PlaceOrderCommand;
@@ -21,11 +22,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultPlaceOrderTest {
@@ -44,23 +43,27 @@ class DefaultPlaceOrderTest {
     void placeOrder_thenSucceed() {
         PlaceOrderCommand command = placeOrderCommand();
 
-        when(orderRepository.save(any()))
-                .thenReturn(Order.builder()
-                        .asPendingOrder()
-                        .customerId(UUID.randomUUID())
-                        .id(orderId)
-                        .note(new Note("note"))
-                        .currency(Currency.PHP())
-                        .items(List.of(Item.builder()
-                                .id(UUID.randomUUID())
-                                .code("CDE")
-                                .quantity(new Quantity())
-                                .description("descriptiuon")
-                                .name("CODE")
-                                .productId(UUID.randomUUID())
-                                .unitPrice(Amount.of("PHP", 200.0))
-                                .build()))
+
+        Order order = Order.builder()
+                .asPendingOrder()
+                .customerId(UUID.randomUUID())
+                .id(orderId)
+                .note(new Note("note"))
+                .currency(Currency.PHP())
+                .build();
+
+        order.addItem(Item.builder()
+                .id(UUID.randomUUID())
+                .code("CDE")
+                .quantity(new Quantity())
+                .description("descriptiuon")
+                .name("CODE")
+                .productId(UUID.randomUUID())
+                .unitPrice(Amount.of("PHP", 200.0))
                 .build());
+
+        when(orderRepository.save(any()))
+                .thenReturn(order);
 
         UUID orderID = defaultPlaceOrder.execute(command);
 
@@ -72,6 +75,25 @@ class DefaultPlaceOrderTest {
         assertOrder(command, orderArgument, OrderStatus.PENDING);
 
         verify(emitter).emit(any(Order.class));
+    }
+
+    @Test
+    void addItem_givenDuplicateItem_thenThrowException(){
+        ItemCommand itemCommand = itemRequest();
+
+        PlaceOrderCommand command = new PlaceOrderCommand(
+                UUID.randomUUID(),
+                List.of(itemCommand, itemCommand),
+                "some note",
+                "PHP"
+        );
+
+        assertThrows(ItemAlreadyExistsException.class,
+                () -> {
+                    defaultPlaceOrder.execute(command);
+                }, "item already exists");
+
+
     }
 
     private static void assertOrder(PlaceOrderCommand command, Order order, OrderStatus orderStatus) {

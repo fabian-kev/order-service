@@ -6,7 +6,6 @@ import com.fabiankevin.orderserviceapp.core.domain.Order;
 import com.fabiankevin.orderserviceapp.core.domain.value.Currency;
 import com.fabiankevin.orderserviceapp.core.domain.value.Note;
 import com.fabiankevin.orderserviceapp.core.domain.value.Quantity;
-import com.fabiankevin.orderserviceapp.core.exceptions.GuardException;
 import com.fabiankevin.orderserviceapp.core.port.db.OrderRepository;
 import com.fabiankevin.orderserviceapp.core.usecases.inbound.PlaceOrderCommand;
 
@@ -30,20 +29,23 @@ public class DefaultPlaceOrder implements PlaceOrder {
     }
 
     private static Order toDomain(PlaceOrderCommand command) {
-        return Order.builder()
+        Order order = Order.builder()
                 .customerId(command.customerId())
                 .currency(new Currency(command.currency()))
                 .note(new Note(command.note()))
-                .items(command.items().stream()
-                        .map(itemRequest -> Item.builder()
-                                .quantity(new Quantity(itemRequest.quantity()))
-                                .code(itemRequest.code())
-                                .description(itemRequest.description())
-                                .name(itemRequest.name())
-                                .productId(itemRequest.productId())
-                                .unitPrice(itemRequest.unitPrice())
-                                .build()).toList())
                 .asPendingOrder()
                 .build();
+
+        command.items()
+                .forEach(itemCommand -> order.addItem(Item.builder()
+                        .quantity(new Quantity(itemCommand.quantity()))
+                        .code(itemCommand.code())
+                        .description(itemCommand.description())
+                        .name(itemCommand.name())
+                        .productId(itemCommand.productId())
+                        .unitPrice(itemCommand.unitPrice())
+                        .build()));
+
+        return order;
     }
 }

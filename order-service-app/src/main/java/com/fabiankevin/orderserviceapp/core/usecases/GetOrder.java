@@ -1,9 +1,9 @@
 package com.fabiankevin.orderserviceapp.core.usecases;
 
-import com.fabiankevin.orderserviceapp.core.usecases.inbound.OrderDto;
+import com.fabiankevin.orderserviceapp.core.domain.Order;
 
 import java.util.UUID;
 
 public interface GetOrder {
-    OrderDto execute(UUID id);
+    Order execute(UUID id);
 }

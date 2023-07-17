@@ -3,7 +3,7 @@ package com.fabiankevin.orderserviceapp.core.domain;
 import com.fabiankevin.domainstarter.domain.Amount;
 import com.fabiankevin.orderserviceapp.core.domain.value.Currency;
 import com.fabiankevin.orderserviceapp.core.domain.value.Note;
-import com.fabiankevin.orderserviceapp.core.exceptions.GuardException;
+import com.fabiankevin.orderserviceapp.core.exceptions.ItemAlreadyExistsException;
 import com.fabiankevin.orderserviceapp.core.guards.Guards;
 
 import java.math.BigDecimal;
@@ -23,22 +23,16 @@ public final class Order {
     public Order(Builder builder) {
         this.id = builder.id;
         this.customerId = builder.customerId;
-        this.items = builder.items;
+        this.items = new ArrayList<>();
         this.note = builder.note;
         this.status = builder.status;
         this.currency = builder.currency;
         this.createdDate = Optional.ofNullable(builder.createdDate).orElse(Instant.now());
         this.updatedDate = Optional.ofNullable(builder.updatedDate).orElse(Instant.now());
 
-        String noItemErrorMessage = "At-least one item to place an order";
         Guards.guard(currency).againstNull("Currency is required");
         Guards.guard(customerId).againstNull("Customer id is required");
-        Guards.guard(items).againstNull(noItemErrorMessage);
         Guards.guard(status).againstNull("Order status is required");
-        if( items.isEmpty() ) {
-            throw new GuardException(noItemErrorMessage);
-        }
-
     }
 
     public static Builder builder(){
@@ -56,6 +50,14 @@ public final class Order {
 
     public void addItem(Item item){
         Guards.guard(item).againstNull("Item should not be null");
+
+        this.items.stream()
+                .filter(item::equals)
+                .findAny()
+                .ifPresent(i -> {
+                    throw new ItemAlreadyExistsException(item);
+                });
+
         this.items.add(item);
     }
 
@@ -120,7 +122,6 @@ public final class Order {
     public static class Builder {
         private UUID id;
         private UUID customerId;
-        private List<Item> items;
         private Currency currency;
         private Note note;
         private OrderStatus status;
@@ -137,10 +138,6 @@ public final class Order {
             return this;
         }
 
-        public Builder items(List<Item> items){
-            this.items = items;
-            return this;
-        }
 
         public Builder currency(Currency currency){
             this.currency = currency;

@@ -1,15 +1,19 @@
 package com.fabiankevin.orderserviceapp.application.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fabiankevin.domainstarter.domain.Amount;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class AmountDto {
     private String currency;
     private BigDecimal value;
+
+    public static AmountDto of(Amount amount){
+        return new AmountDto(amount.getCurrency(), amount.getValue());
+    }
 }

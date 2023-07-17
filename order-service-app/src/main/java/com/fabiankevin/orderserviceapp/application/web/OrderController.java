@@ -7,8 +7,6 @@ import com.fabiankevin.orderserviceapp.application.web.dto.response.OrderRespons
 import com.fabiankevin.orderserviceapp.application.web.mapper.OrderMapper;
 import com.fabiankevin.orderserviceapp.core.usecases.GetOrder;
 import com.fabiankevin.orderserviceapp.core.usecases.PlaceOrder;
-import com.fabiankevin.orderserviceapp.core.usecases.inbound.ItemDto;
-import com.fabiankevin.orderserviceapp.core.usecases.inbound.OrderDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,29 +33,6 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public OrderResponse getOrderById(@PathVariable UUID orderId) {
-        OrderDto orderDto = getOrder.execute(orderId);
-        return OrderResponse.builder()
-                .id(orderDto.id())
-                .items(orderDto.items().stream().map(OrderController::toItemResponse).collect(Collectors.toList()))
-                .currency(orderDto.currency())
-                .status(orderDto.status())
-                .customerId(orderDto.customerId())
-                .note(orderDto.note())
-                .updatedDate(orderDto.updatedDate())
-                .createdDate(orderDto.createdDate())
-                .build();
-    }
-
-    private static OrderResponse.Item toItemResponse(ItemDto itemDto){
-        return OrderResponse.Item.builder()
-                .id(itemDto.id())
-                .code(itemDto.code())
-                .name(itemDto.name())
-                .description(itemDto.description())
-                .code(itemDto.code())
-                .productId(itemDto.productId())
-                .unitPrice(new AmountDto(itemDto.unitPrice().getCurrency(), itemDto.unitPrice().getValue()))
-                .quantity(itemDto.quantity())
-                .build();
+        return orderMapper.toOrderResponse(getOrder.execute(orderId));
     }
 }

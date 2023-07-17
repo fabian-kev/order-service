@@ -37,3 +37,5 @@ CREATE TABLE items
     CONSTRAINT items_pk PRIMARY KEY (id),
     CONSTRAINT items_order_id_fk FOREIGN KEY (order_id) REFERENCES orders (id)
 );
+
+CREATE UNIQUE INDEX items_uidx ON items (product_id, code);
